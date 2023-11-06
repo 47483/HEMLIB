@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'styles/main.css' %}">
+    {% block head %}
+    {% endblock %}
+</head>
+<body>
+    <div id="mainwrapper">
+        <nav>
+            <button onclick="document.location.href = '/'">Welcome</button>
+            {% if authenticated %}
+            <button onclick="document.location.href = '/home/'">Home</button>
+            <button onclick="document.location.href = '/logout/'">Logout</button>
+            <div class="navMisc">Logged in as {{username}}</div>
+            {% else %}
+            <button onclick="document.location.href = '/login/'">Login/Signup</button>
+            {% endif %}
+            {% block nav %}
+            {% endblock %}
+        </nav>
+        {% block body %}
+        {% endblock %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,197 @@
+{% extends 'base/main.html' %}
+
+{% block head %}
+    <title>HEMLIB</title>
+    <style>
+        #contentBox {
+            display: flex;
+            flex-wrap: wrap;
+            flex-basis: 32%;
+        }
+
+        .content {
+            flex: 1;
+            text-align: center;
+            justify-content: center;
+            padding: 0.5em;
+        }
+
+        img {
+            width: 10em;
+            height: 10em;
+            object-fit: cover;
+            border: 1px solid black;
+        }
+
+        a {
+            display: block;
+        }
+
+        #barWrapper {
+            box-sizing: border-box;
+            padding-left: 1em;
+            padding-right: 1em;
+            width: 100%;
+        }
+
+        #searchBar {
+            box-sizing: border-box;
+            padding: 0.5em;
+            width: 100%;
+            font-size: large;
+            border: 1px solid black;
+        }
+
+        .previewWrapper {
+            position: relative;
+            width: min-content;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .contentBtn {
+            position: absolute;
+            display: flex;
+            background-color: white;
+            padding: 0.125em;
+            border: 1px solid black;
+        }
+
+        .contentBtn:hover {
+            cursor: pointer;
+            transform: scale(110%);
+        }
+
+        .btn1 {
+            top: 0.25em;
+            right: -0.5em;
+        }
+
+        .btn2 {
+            top: 1.75em;
+            right: -0.5em;
+        }
+
+        .popupCover {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: black;
+            filter: opacity(20%);
+        }
+
+        .popupContent {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+        }
+    </style>
+    <script>
+        function Popup(name,id) {
+            let popup = document.getElementById(name)
+            popup.style.display = "block";
+            popup.querySelector('#targetId').value = id;
+        }
+
+        function ClosePopups() {
+            let popups = document.getElementsByClassName("popup");
+            
+            for (let popup of popups) {
+                popup.style.display = "none";
+            }
+        }
+
+        window.onload = function() {
+            let popupCovers = document.getElementsByClassName("popupCover");
+
+            for (let popupCover of popupCovers) {
+                popupCover.onclick = function(e) {
+                    ClosePopups();
+                }
+            }
+        }
+
+        function RemoveContent() {
+            let id = document.getElementById('delete').querySelector('#targetId').value;
+            let csrf = document.cookie.split('=')[1];
+            let fd = new FormData;
+            fd.append('csrfmiddlewaretoken', csrf);
+            fd.append('action','Remove');
+            fd.append('target',id);
+
+            fetch('/managecontent/', {
+                method: 'POST',
+                body: fd,
+                credentials: 'same-origin'
+            })
+
+            .then(response => {
+                if (response.status == 200) {
+                    return response.json();
+                }
+
+                return response;
+            })
+
+            .then(data => {
+                console.log(data);
+            });
+        }
+    </script>
+{% endblock %}
+
+{% block nav %}
+    <button>Add</button>
+    <div id="barWrapper"><input class="center" id="searchBar" type="text" placeholder="Search in library.."></div>
+{% endblock %}
+
+{% block body %}
+    <h3>MY CONTENT</h3>
+    <div id="contentBox">
+        {% load static %}
+        {% for file in content %}
+            <div class="content">
+                {{file.uploaded}}
+                <div class="previewWrapper">
+                    <a href="{% static file.file %}"><img src="{% static file.file %}" onerror="this.onerror = null; this.src=`{% static 'uploads/nopreview.jpg' %}`"></a>
+                    <div class="contentBtn btn1" onclick="Popup('delete','{{file.id}}')">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 7h16"></path>
+                            <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path>
+                            <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"></path>
+                            <path d="M10 12l4 4m0 -4l-4 4"></path>
+                        </svg>
+                    </div>
+                    <div class="contentBtn btn2" onclick="Popup('manage','{{file.id}}')">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                            <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
+                        </svg>
+                    </div>
+                </div>
+                <a href="{% static file.file %}">{{file.filename}}</a>
+            </div>
+        {% endfor %}
+    </div>
+    <h3>SHARED CONTENT</h3>
+    <div style="display: none;" class="popup" id="manage">
+        <input type="hidden" id="targetId">
+        <div class="popupCover"></div>
+        <div class="popupContent">
+            <h1>WORK IN PROGRESS</h1>
+        </div>
+    </div>
+    <div style="display: none;" class="popup" id="delete">
+        <input type="hidden" id="targetId">
+        <div class="popupCover"></div>
+        <div class="popupContent">
+            <h3>Are you sure?</h3>
+            <button onclick="RemoveContent()">Yes</button>
+            <button onclick="ClosePopups()">No</button>
+        </div>
+    </div>
+{% endblock %}

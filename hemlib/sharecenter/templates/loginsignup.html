@@ -1,0 +1,23 @@
+{% extends 'base/main.html' %}
+
+{% block head %}
+    <title>HEMLIB Login/Signup</title>
+{% endblock %}
+
+{% block body %}
+    <h3>Login</h3>
+    <form method="POST" action="">
+        {% csrf_token %}
+        {{login}}
+        <input type="hidden" name="formAction" value="login">
+        <input type="submit">
+    </form>
+    <hr>
+    <h3>Signup</h3>
+    <form method="POST" action="">
+        {% csrf_token %}
+        {{signup}}
+        <input type="hidden" name="formAction" value="signup">
+        <input type="submit">
+    </form>
+{% endblock %}
